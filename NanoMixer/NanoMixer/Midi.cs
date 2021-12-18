@@ -21,10 +21,10 @@ namespace NanoMixer {
             midiIn.ErrorReceived += midiIn_ErrorReceived;
             midiIn.Start();
             Console.ReadLine();
-            int tick = 0;
-            while (true) {
-                tick++;
-            }
+
+            //Force the application to not go to sleep
+            //TODO: This prevents the main windows from opening
+            while (true) { }
 
         }
         void midiIn_ErrorReceived(object sender, MidiInMessageEventArgs e) {
@@ -37,6 +37,8 @@ namespace NanoMixer {
             //  e.Timestamp, e.RawMessage, e.MidiEvent));
 
             MidiChange c = EvalMessage(e.MidiEvent);
+            
+            HandleMessage(c);
 
             Debug.WriteLine(String.Format("Input {0} Value {1}", c.Track, c.Value));
         }
@@ -48,6 +50,22 @@ namespace NanoMixer {
             return new MidiChange(LookUpController(m.Groups[1].Value), Int32.Parse(m.Groups[2].Value));
         }
 
+
+        void HandleMessage(MidiChange c) {
+            switch (c.Track) {
+                case Track.Play:
+                    if (c.Value == 127) { Playback.PlayPause(); }
+                    break;
+                case Track.Skip:
+                    if (c.Value == 127) { Playback.Skip(); }
+                    break;
+                case Track.Reverse:
+                    if (c.Value == 127) { Playback.Reverse(); }
+                    break;
+            }
+
+        }
+       
         Track LookUpController(string interfaceName) {
             switch (interfaceName) {
                 case "Controller BankSelect":
