@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NanoMixer {
@@ -37,7 +38,7 @@ namespace NanoMixer {
             //  e.Timestamp, e.RawMessage, e.MidiEvent));
 
             MidiChange c = EvalMessage(e.MidiEvent);
-            
+
             HandleMessage(c);
 
             Debug.WriteLine(String.Format("Input {0} Value {1}", c.Track, c.Value));
@@ -49,6 +50,8 @@ namespace NanoMixer {
 
             return new MidiChange(LookUpController(m.Groups[1].Value), Int32.Parse(m.Groups[2].Value));
         }
+
+        Dictionary<string, int[]> pids = new Dictionary<string, int[]>();
 
 
         void HandleMessage(MidiChange c) {
@@ -62,10 +65,52 @@ namespace NanoMixer {
                 case Track.Reverse:
                     if (c.Value == 127) { Playback.Reverse(); }
                     break;
+                case Track.Volume8:
+                    string procesName = "Spotify";
+                    Debug.WriteLine(c.Value);
+                    
+                    foreach (int pid in GetPids(procesName)) {
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            try {
+                                AudioManager.SetApplicationVolume(pid, MapVolume(c.Value));
+
+                            } catch (Exception) { }
+                        }).Start();
+                        
+
+                    }
+                    
+
+                    break;
             }
 
         }
-       
+
+        int[] GetPids(string process) {
+            if (pids.ContainsKey(process)) {
+                return pids[process];
+            } else {
+                int[] lookup = GetPidsByName(process);
+                pids.Add(process, lookup);
+                return lookup;
+            }
+        }
+
+        int[] GetPidsByName(string name) {
+            Process[] pList = Process.GetProcessesByName(name);
+            List<int> ids = new List<int>();
+            foreach (Process p in pList) {
+                ids.Add(p.Id);
+            }
+            return ids.ToArray();
+        }
+
+        int MapVolume(int volume) {
+            return 0 + (volume - 0) * (100 - 0) / (127 - 0);
+        }
+
         Track LookUpController(string interfaceName) {
             switch (interfaceName) {
                 case "Controller BankSelect":
