@@ -88,36 +88,23 @@ namespace NanoMixer {
 
                 case Track.Volume8:
                     /*
-                    //DefaultMediaDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
-                    //var newVolume = (float)Math.Max(Math.Min(10, 100), 0) / (float)100;
-
-                    //dev.AudioEndpointVolume.MasterVolumeLevelScalar = newVolume;
-
-
-                    var enumerator = new MMDeviceEnumerator();
-                    foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.All)) {
-                        Console.WriteLine($"{wasapi.DataFlow} {wasapi.FriendlyName} {wasapi.DeviceFriendlyName} {wasapi.State}");
-                    }
-
                     try {
-                        MMDeviceEnumerator MMDE = new MMDeviceEnumerator();
-                        var x = MMDE.GetDefaultAudioEndpoint();
+                        NAudio.CoreAudioApi.MMDeviceEnumerator MMDE = new NAudio.CoreAudioApi.MMDeviceEnumerator();
 
                         MMDeviceCollection DevCol = MMDE.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
-                        var x = new IMMDeviceEnumerator();
 
                         foreach (MMDevice dev in DevCol) {
                             try {
-                                //var newVolume = (float)Math.Max(Math.Min(10, 100), 0) / (float)100;
+                                float newVolume = (float) MapVolume(c.Value) / (float) 100.0;
 
                                 //dev.AudioEndpointVolume.MasterVolumeLevelScalar = newVolume;
 
                                 var sessions = dev.AudioSessionManager.Sessions;
                                 for (int i = 0; i < sessions.Count; i++) {
                                     Process process = Process.GetProcessById((int)sessions[i].GetProcessID);
-                                    if (process.ProcessName == "foobar2000" && !String.IsNullOrEmpty(process.MainWindowTitle)) {
-                                        pID = process.Id;
-                                        sessions[i].SimpleAudioVolume.Volume = 0.2f;
+                                    if (process.ProcessName == "Spotify" && !String.IsNullOrEmpty(process.MainWindowTitle)) {
+                                        var pID = process.Id;
+                                        sessions[i].SimpleAudioVolume.Volume = newVolume;
                                     }
                                 }
 
