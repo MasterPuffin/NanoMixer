@@ -1,16 +1,18 @@
-﻿using NAudio.Midi;
+﻿using NAudio.Wave;
+using NAudio.Codecs;
+using NAudio.CoreAudioApi;
+using NAudio.Mixer;
+using NAudio.Utils;
+using NAudio.Midi;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace NanoMixer {
     class Midi {
-        public void run() {
+        public void Run() {
             Debug.WriteLine("Hello WOrld");
 
             for (int device = 0; device < MidiIn.NumberOfDevices; device++) {
@@ -65,23 +67,69 @@ namespace NanoMixer {
                 case Track.Reverse:
                     if (c.Value == 127) { Playback.Reverse(); }
                     break;
-                case Track.Volume8:
+                case Track.Volume7:
                     string procesName = "Spotify";
                     Debug.WriteLine(c.Value);
-                    
+
                     foreach (int pid in GetPids(procesName)) {
-                        new Thread(() =>
-                        {
+                        new Thread(() => {
                             Thread.CurrentThread.IsBackground = true;
                             try {
                                 AudioManager.SetApplicationVolume(pid, MapVolume(c.Value));
 
                             } catch (Exception) { }
                         }).Start();
-                        
+
 
                     }
-                    
+
+
+                    break;
+
+                case Track.Volume8:
+                    /*
+                    //DefaultMediaDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                    //var newVolume = (float)Math.Max(Math.Min(10, 100), 0) / (float)100;
+
+                    //dev.AudioEndpointVolume.MasterVolumeLevelScalar = newVolume;
+
+
+                    var enumerator = new MMDeviceEnumerator();
+                    foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.All)) {
+                        Console.WriteLine($"{wasapi.DataFlow} {wasapi.FriendlyName} {wasapi.DeviceFriendlyName} {wasapi.State}");
+                    }
+
+                    try {
+                        MMDeviceEnumerator MMDE = new MMDeviceEnumerator();
+                        var x = MMDE.GetDefaultAudioEndpoint();
+
+                        MMDeviceCollection DevCol = MMDE.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+                        var x = new IMMDeviceEnumerator();
+
+                        foreach (MMDevice dev in DevCol) {
+                            try {
+                                //var newVolume = (float)Math.Max(Math.Min(10, 100), 0) / (float)100;
+
+                                //dev.AudioEndpointVolume.MasterVolumeLevelScalar = newVolume;
+
+                                var sessions = dev.AudioSessionManager.Sessions;
+                                for (int i = 0; i < sessions.Count; i++) {
+                                    Process process = Process.GetProcessById((int)sessions[i].GetProcessID);
+                                    if (process.ProcessName == "foobar2000" && !String.IsNullOrEmpty(process.MainWindowTitle)) {
+                                        pID = process.Id;
+                                        sessions[i].SimpleAudioVolume.Volume = 0.2f;
+                                    }
+                                }
+
+                                Debug.WriteLine("Volume of " + dev.DeviceFriendlyName + " is " + dev.AudioEndpointVolume.MasterVolumeLevelScalar.ToString());
+                            } catch (Exception ex) {
+                                Debug.WriteLine(dev.DeviceFriendlyName + " could not be muted " + ex);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        Debug.WriteLine("Error: " + ex.Message);
+                    }
+                    */
 
                     break;
             }

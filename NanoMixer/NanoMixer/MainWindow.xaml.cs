@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,8 +20,8 @@ namespace NanoMixer {
     public partial class MainWindow : Window {
         public MainWindow() {
             InitializeComponent();
-            Midi midi = new Midi();
-            midi.run();
+            Midi m = new Midi();
+            m.Run();
         }
     }
 }

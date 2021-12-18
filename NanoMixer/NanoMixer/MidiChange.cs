@@ -22,7 +22,7 @@ namespace NanoMixer {
         Other
     }
     class MidiChange {
-        public Track Track;        
+        public Track Track;
         public int Value;
 
         public MidiChange(Track track, int value) {
