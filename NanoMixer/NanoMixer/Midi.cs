@@ -25,6 +25,8 @@ namespace NanoMixer {
             midiIn.Start();
             Console.ReadLine();
 
+            lastCall = DateTime.Now;
+
             //Force the application to not go to sleep
             //TODO: This prevents the main windows from opening
             while (true) { }
@@ -54,6 +56,30 @@ namespace NanoMixer {
         }
 
         Dictionary<string, int[]> pids = new Dictionary<string, int[]>();
+        int targetValue = 0;
+        DateTime lastCall;
+        bool busy = false;
+
+        async void SetTargetValue(string processName, int value) {
+            targetValue = value;
+
+            Double elapsedMillisecs = ((TimeSpan)(DateTime.Now - lastCall)).TotalMilliseconds;
+            if (elapsedMillisecs<100) return;
+
+            lastCall = DateTime.Now;
+
+            busy = true;
+            //Thread.Sleep(10);
+            Debug.WriteLine("setting volume");
+            foreach (int pid in GetPids(processName)) {
+                new Thread(() => {
+                    Thread.CurrentThread.IsBackground = true;
+                    AudioManager.SetApplicationVolume(pid, MapVolume(targetValue));
+                }).Start();
+            }
+            busy = false;
+
+        }
 
 
         void HandleMessage(MidiChange c) {
@@ -70,8 +96,11 @@ namespace NanoMixer {
                 case Track.Volume7:
                     string procesName = "Spotify";
                     Debug.WriteLine(c.Value);
+                    SetTargetValue(procesName, c.Value);
 
+                    /*
                     foreach (int pid in GetPids(procesName)) {
+                        
                         new Thread(() => {
                             Thread.CurrentThread.IsBackground = true;
                             try {
@@ -79,10 +108,10 @@ namespace NanoMixer {
 
                             } catch (Exception) { }
                         }).Start();
-
+                       
 
                     }
-
+                     */
 
                     break;
 
